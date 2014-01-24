@@ -406,7 +406,7 @@ end
 --- Write a encoded char array into buf
 function ByteArray:writeBuf(__s)
 	for i=1,#__s do
-		self:writeRawByte(__s:sub(i))
+		self:writeRawByte(__s:sub(i, i))
 	end
 	return self
 end

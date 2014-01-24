@@ -23,3 +23,4 @@ del ___tmp___
 echo.
 echo DONE
 echo.
+pause

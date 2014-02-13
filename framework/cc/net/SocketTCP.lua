@@ -168,8 +168,9 @@ function SocketTCP:_onConnected()
     receive_msg_part = function(msgLen)
         local tmpLen = string.len(self.buf)
 
-        local packet, status, partial = self.tcp:receive(msgLen - tmpLen, self.buf)	-- read the package body
-        --print("receive, packet:", packet, "status:", status, "partial:", partial, "msgLen:", msgLen, "tmpLen:", tmpLen)
+        --print("msgLen:", msgLen, "tmpLen:", tmpLen, "---:", msgLen - tmpLen, "type:", type(msgLen-tmpLen))
+        local packet, status, partial = self.tcp:receive(msgLen - tmpLen)	-- read the package body
+        --print("receive, packet:", packet, "status:", status, "partial:", partial)
         --if packet then
             --print( "len:", string.len(packet))
         --end
@@ -177,14 +178,21 @@ function SocketTCP:_onConnected()
         if status == STATUS_CLOSED or status == STATUS_NOT_CONNECTED then
             return 2
         end
-        if (packet and string.len(packet) == 0) or
-            (partial and string.len(partial) == 0) then 
+
+        -- 没有收到内容
+        if (not (packet and string.len(packet) > 0)) and
+            (not (partial and string.len(partial) >0)) then
             return 0
         end
 
-        self.buf = packet or partial
+        if packet and string.len(packet) > 0 then
+            self.buf = self.buf .. packet
+        end
+        if partial and string.len(partial) > 0 then
+            self.buf = self.buf .. partial
+        end
+
         tmpLen = string.len(self.buf)
-        --print("tmpLen:", tmpLen)
 
         if tmpLen == msgLen then
             return 1; 
@@ -235,8 +243,8 @@ function SocketTCP:_onConnected()
                     local protoName = byteArr:readStringUShort()
                     byteArr:setPos(1)
                     --CCNotificationCenter:sharedNotificationCenter()->postNotification(protoName);
-                    self:dispatchEvent({name=SocketTCP.EVENT_DATA, protoName = protoName, data=socketDecode(byteArr)})
                     self.buf = ""
+                    self:dispatchEvent({name=SocketTCP.EVENT_DATA, protoName = protoName, data=socketDecode(byteArr)})
                 end
             end
         end

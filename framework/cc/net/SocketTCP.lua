@@ -46,8 +46,8 @@ function SocketTCP:ctor(__host, __port, __retryConnectWhenFailure)
     self.tcp = nil
     self.isRetryConnect = __retryConnectWhenFailure
     self.isConnected = false
-    self.buf = ""
     self.packet = 4
+    self.buf = ""
 end
 
 function SocketTCP:setName( __name )
@@ -144,12 +144,14 @@ end
 
 function SocketTCP:_disconnect()
     self.isConnected = false
+    self.buf = ""
     self.tcp:shutdown()
     self:dispatchEvent({name=SocketTCP.EVENT_CLOSED})
 end
 
 function SocketTCP:_onDisconnect()
     --echoInfo("%s._onDisConnect", self.name);
+    self.buf = ""
     self.isConnected = false
     self:dispatchEvent({name=SocketTCP.EVENT_CLOSED})
     self:_reconnect();
@@ -166,7 +168,7 @@ function SocketTCP:_onConnected()
     receive_msg_part = function(msgLen)
         local tmpLen = string.len(self.buf)
 
-        local packet, status, partial = self.tcp:receive(msgLen - tmpLen)	-- read the package body
+        local packet, status, partial = self.tcp:receive(msgLen - tmpLen, self.buf)	-- read the package body
         --print("receive, packet:", packet, "status:", status, "partial:", partial, "msgLen:", msgLen, "tmpLen:", tmpLen)
         --if packet then
             --print( "len:", string.len(packet))
@@ -194,7 +196,6 @@ function SocketTCP:_onConnected()
     end
     local __tick = function()
         while true do
-            self.buf = ""
             local ret = receive_msg_part(self.packet)
             if ret == 2 then -- close
                 self:close()
@@ -235,6 +236,7 @@ function SocketTCP:_onConnected()
                     byteArr:setPos(1)
                     --CCNotificationCenter:sharedNotificationCenter()->postNotification(protoName);
                     self:dispatchEvent({name=SocketTCP.EVENT_DATA, protoName = protoName, data=socketDecode(byteArr)})
+                    self.buf = ""
                 end
             end
         end

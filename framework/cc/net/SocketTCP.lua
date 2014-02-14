@@ -95,6 +95,7 @@ function SocketTCP:connect(__host, __port, __retryConnectWhenFailure)
             if self.isConnected then return end
             self.waitConnect = self.waitConnect or 0
             self.waitConnect = self.waitConnect + SOCKET_TICK_TIME
+            echoInfo("waitConnect:%0.2f, SOCKET_TICK_TIME:%0.2f,SOCKET_CONNECT_FAIL_TIMEOUT:%0.2f", self.waitConnect,SOCKET_TICK_TIME, SOCKET_CONNECT_FAIL_TIMEOUT)
             if self.waitConnect >= SOCKET_CONNECT_FAIL_TIMEOUT then
                 self.waitConnect = nil
                 self:close()
@@ -154,6 +155,7 @@ function SocketTCP:_onDisconnect()
     self.buf = ""
     self.isConnected = false
     self:dispatchEvent({name=SocketTCP.EVENT_CLOSED})
+    echoInfo("_reconect111111111111")
     self:_reconnect();
 end
 
@@ -212,6 +214,7 @@ function SocketTCP:_onConnected()
                 else 
                     self:_connectFailure()
                 end
+                return
             elseif ret == 0 then -- receive nothing
                 return
             elseif ret == 1 then -- receive one packet
@@ -230,6 +233,7 @@ function SocketTCP:_onConnected()
                     else 
                         self:_connectFailure()
                     end
+                    return
                 elseif ret == 0 then -- receive nothing
                     return
                 elseif ret == 1 then -- receive one packet
@@ -256,6 +260,7 @@ end
 function SocketTCP:_connectFailure(status)
     --echoInfo("%s._connectFailure", self.name);
     self:dispatchEvent({name=SocketTCP.EVENT_CONNECT_FAILURE})
+    echoInfo("_reconect111111111111")
     self:_reconnect();
 end
 

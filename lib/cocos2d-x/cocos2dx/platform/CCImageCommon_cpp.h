@@ -1,3 +1,4 @@
+// Last Change: 2014-02-19 21:49:32
 /****************************************************************************
 Copyright (c) 2010 cocos2d-x.org
 Copyright (c) Microsoft Open Technologies, Inc.
@@ -53,7 +54,7 @@ THE SOFTWARE.
 #include <SDL/SDL.h>
 #include <SDL/SDL_image.h>
 #endif // EMSCRIPTEN
-
+#include "HelperFunc.h"
 NS_CC_BEGIN
 
 // premultiply alpha, or the effect will wrong when want to use other pixel format in CCTexture2D,
@@ -139,7 +140,8 @@ bool CCImage::initWithImageFile(const char * strPath, EImageFormat eImgFmt/* = e
 #else
     unsigned long nSize = 0;
     std::string fullPath = CCFileUtils::sharedFileUtils()->fullPathForFilename(strPath);
-    unsigned char* pBuffer = CCFileUtils::sharedFileUtils()->getFileData(fullPath.c_str(), "rb", &nSize);
+    unsigned char* pBuffer = CZHelperFunc::getFileData(fullPath.c_str(), "rb", &nSize);
+        //unsigned char* pBuffer = CCFileUtils::sharedFileUtils()->getFileData(fullPath.c_str(), "rb", &nSize);
     if (pBuffer != NULL && nSize > 0)
     {
         bRet = initWithImageData(pBuffer, nSize, eImgFmt);
@@ -155,10 +157,14 @@ bool CCImage::initWithImageFileThreadSafe(const char *fullpath, EImageFormat ima
     bool bRet = false;
     unsigned long nSize = 0;
 #if (CC_TARGET_PLATFORM == CC_PLATFORM_ANDROID)
-    CCFileUtilsAndroid *fileUitls = (CCFileUtilsAndroid*)CCFileUtils::sharedFileUtils();
-    unsigned char *pBuffer = fileUitls->getFileDataForAsync(fullpath, "rb", &nSize);
+	unsigned char *pBuffer = CZHelperFunc::getFileData(fullpath, "rb", &nSize);
+
+    //CCFileUtilsAndroid *fileUitls = (CCFileUtilsAndroid*)CCFileUtils::sharedFileUtils();
+  
+        //unsigned char *pBuffer = fileUitls->getFileDataForAsync(fullpath, "rb", &nSize);
 #else
-    unsigned char *pBuffer = CCFileUtils::sharedFileUtils()->getFileData(fullpath, "rb", &nSize);
+	unsigned char *pBuffer = CZHelperFunc::getFileData(fullpath, "rb", &nSize); 
+    //unsigned char *pBuffer = CCFileUtils::sharedFileUtils()->getFileData(fullpath, "rb", &nSize);
 #endif
     if (pBuffer != NULL && nSize > 0)
     {

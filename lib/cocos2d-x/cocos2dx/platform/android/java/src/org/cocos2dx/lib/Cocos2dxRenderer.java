@@ -36,7 +36,7 @@ public class Cocos2dxRenderer implements GLSurfaceView.Renderer {
 	private final static long NANOSECONDSPERSECOND = 1000000000L;
 	private final static long NANOSECONDSPERMICROSECOND = 1000000;
 
-	private static long sAnimationInterval = (long) (1.0 / 60 * Cocos2dxRenderer.NANOSECONDSPERSECOND);
+	private static long sAnimationInterval = (long) (1.0 / 30 * Cocos2dxRenderer.NANOSECONDSPERSECOND);
 
 	// ===========================================================
 	// Fields
@@ -79,36 +79,70 @@ public class Cocos2dxRenderer implements GLSurfaceView.Renderer {
 	@Override
 	public void onSurfaceChanged(final GL10 pGL10, final int pWidth, final int pHeight) {
 	}
+	
+	private long renderingElapsedTime;
 
 	@Override
 	public void onDrawFrame(final GL10 gl) {
-		/*
-		 * FPS controlling algorithm is not accurate, and it will slow down FPS
-		 * on some devices. So comment FPS controlling code.
-		 */
-		
-		/*
-		final long nowInNanoSeconds = System.nanoTime();
-		final long interval = nowInNanoSeconds - this.mLastTickInNanoSeconds;
-		*/
+	    /*
+	     * FPS controlling algorithm is not accurate, and it will slow down FPS
+	     * on some devices. So comment FPS controlling code.
+	     */
 
-		// should render a frame when onDrawFrame() is called or there is a
-		// "ghost"
-		Cocos2dxRenderer.nativeRender();
+	    try {
+	        if (renderingElapsedTime * NANOSECONDSPERMICROSECOND < Cocos2dxRenderer.sAnimationInterval) {
+	            Thread.sleep((Cocos2dxRenderer.sAnimationInterval - renderingElapsedTime * NANOSECONDSPERMICROSECOND) / NANOSECONDSPERMICROSECOND);
+	        }
+	    } catch (InterruptedException e) {
+	        e.printStackTrace();
+	    }
 
-		/*
-		// fps controlling
-		if (interval < Cocos2dxRenderer.sAnimationInterval) {
-			try {
-				// because we render it before, so we should sleep twice time interval
-				Thread.sleep((Cocos2dxRenderer.sAnimationInterval - interval) / Cocos2dxRenderer.NANOSECONDSPERMICROSECOND);
-			} catch (final Exception e) {
-			}
-		}
+	    /*
+	    final long nowInNanoSeconds = System.nanoTime();
+	    final long interval = nowInNanoSeconds - this.mLastTickInNanoSeconds;
+	    */
 
-		this.mLastTickInNanoSeconds = nowInNanoSeconds;
-		*/
+	    // Get the timestamp when rendering started
+	    long renderingStartedTimestamp = System.currentTimeMillis();
+
+	    // should render a frame when onDrawFrame() is called or there is a
+	    // "ghost" 
+	    Cocos2dxRenderer.nativeRender();
+
+	    // Calculate the elapsed time during rendering
+	    renderingElapsedTime = (System.currentTimeMillis() - renderingStartedTimestamp);
+
 	}
+
+//	@Override
+//	public void onDrawFrame(final GL10 gl) {
+//		/*
+//		 * FPS controlling algorithm is not accurate, and it will slow down FPS
+//		 * on some devices. So comment FPS controlling code.
+//		 */
+//		
+//		/*
+//		final long nowInNanoSeconds = System.nanoTime();
+//		final long interval = nowInNanoSeconds - this.mLastTickInNanoSeconds;
+//		*/
+//
+//		// should render a frame when onDrawFrame() is called or there is a
+//		// "ghost"
+//		Cocos2dxRenderer.nativeRender();
+//
+//		/*
+//		// fps controlling
+//		if (interval < Cocos2dxRenderer.sAnimationInterval) {
+//			try {
+//				// because we render it before, so we should sleep twice time interval
+//				Thread.sleep((Cocos2dxRenderer.sAnimationInterval - interval) / Cocos2dxRenderer.NANOSECONDSPERMICROSECOND);
+//			} catch (final Exception e) {
+//			}
+//		}
+//
+//		this.mLastTickInNanoSeconds = nowInNanoSeconds;
+//		*/
+//	}
 
 	// ===========================================================
 	// Methods

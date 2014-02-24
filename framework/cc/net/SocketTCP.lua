@@ -48,6 +48,7 @@ function SocketTCP:ctor(__host, __port, __retryConnectWhenFailure)
     self.isConnected = false
     self.packet = 4
     self.buf = ""
+    self.msgLen = 0
 end
 
 function SocketTCP:setName( __name )
@@ -146,6 +147,7 @@ end
 function SocketTCP:_disconnect()
     self.isConnected = false
     self.buf = ""
+    self.msgLen = 0
     self.tcp:shutdown()
     self:dispatchEvent({name=SocketTCP.EVENT_CLOSED})
 end
@@ -153,6 +155,7 @@ end
 function SocketTCP:_onDisconnect()
     --echoInfo("%s._onDisConnect", self.name);
     self.buf = ""
+    self.msgLen = 0
     self.isConnected = false
     self:dispatchEvent({name=SocketTCP.EVENT_CLOSED})
     echoInfo("_reconect111111111111")
@@ -167,11 +170,11 @@ function SocketTCP:_onConnected()
     if self.connectTimeTickScheduler then scheduler.unscheduleGlobal(self.connectTimeTickScheduler) end
 
     local receive_msg_part
-    receive_msg_part = function(msgLen)
+    receive_msg_part = function()
         local tmpLen = string.len(self.buf)
 
         --print("msgLen:", msgLen, "tmpLen:", tmpLen, "---:", msgLen - tmpLen, "type:", type(msgLen-tmpLen))
-        local packet, status, partial = self.tcp:receive(msgLen - tmpLen)	-- read the package body
+        local packet, status, partial = self.tcp:receive(self.msgLen - tmpLen)	-- read the package body
         --print("receive, packet:", packet, "status:", status, "partial:", partial)
         --if packet then
             --print( "len:", string.len(packet))
@@ -196,18 +199,63 @@ function SocketTCP:_onConnected()
 
         tmpLen = string.len(self.buf)
 
-        if tmpLen == msgLen then
+        if tmpLen == self.msgLen then
             return 1; 
-        elseif tmpLen > 0 and tmpLen < msgLen then
-            return receive_msg_part(msgLen - tmpLen);
+        elseif tmpLen > 0 and tmpLen < self.msgLen then
+            return receive_msg_part();
         else --  /* tmpLen > self.msgLen */
             return 2
         end
     end
+
+    local receive_msg, receive_head, receive_body
+
+    receive_head = function()
+        local ret = receive_msg_part()
+        if ret == 1 then
+            local byteArr = cc.utils.ByteArray.new(cc.utils.ByteArray.ENDIAN_BIG)
+            byteArr:writeStringBytes(self.buf)
+            byteArr:setPos(1)
+            self.msgLen = byteArr:readInt()
+            self.buf = ""
+            receive_msg = receive_body
+            return receive_msg()
+        else 
+            return ret
+        end
+    end
+
+    receive_body = function()
+        local ret = receive_msg_part()
+        if ret == 1 then
+            local byteArr = cc.utils.ByteArray.new(cc.utils.ByteArray.ENDIAN_BIG)
+            byteArr:writeStringBytes(self.buf)
+            byteArr:setPos(1)
+            byteArr:readByte() -- 131 erlang header
+            byteArr:readByte() -- tuple flag 104
+            byteArr:readByte() -- tuple arity
+            byteArr:readByte() -- atom flag 
+            local protoName = byteArr:readStringUShort()
+            byteArr:setPos(1)
+            --CCNotificationCenter:sharedNotificationCenter()->postNotification(protoName);
+            self.buf = ""
+            self.msgLen = self.packet
+            receive_msg = receive_head
+            self:dispatchEvent({name=SocketTCP.EVENT_DATA, protoName = protoName, data=socketDecode(byteArr)})
+            return 0
+        else 
+            return ret
+        end
+    end
+
+    self.buf = ""
+    self.msgLen = self.packet
+    receive_msg = receive_head
+
     local __tick = function()
         while true do
-            local ret = receive_msg_part(self.packet)
-            if ret == 2 then -- close
+            local ret = receive_msg()
+            if ret == 2 then
                 self:close()
                 if self.isConnected then
                     self:_onDisconnect()
@@ -217,39 +265,6 @@ function SocketTCP:_onConnected()
                 return
             elseif ret == 0 then -- receive nothing
                 return
-            elseif ret == 1 then -- receive one packet
-                --print("self.buf:", self.buf, "len:", string.len(self.buf))
-                local byteArr = cc.utils.ByteArray.new(cc.utils.ByteArray.ENDIAN_BIG)
-                byteArr:writeStringBytes(self.buf)
-                byteArr:setPos(1)
-                local msgLen = byteArr:readInt()
-                --print(" body len:", msgLen)
-                self.buf = ""
-                local ret = receive_msg_part(msgLen)
-                if ret == 2 then -- close
-                    self:close()
-                    if self.isConnected then
-                        self:_onDisconnect()
-                    else 
-                        self:_connectFailure()
-                    end
-                    return
-                elseif ret == 0 then -- receive nothing
-                    return
-                elseif ret == 1 then -- receive one packet
-                    local byteArr = cc.utils.ByteArray.new(cc.utils.ByteArray.ENDIAN_BIG)
-                    byteArr:writeStringBytes(self.buf)
-                    byteArr:setPos(1)
-                    byteArr:readByte() -- 131 erlang header
-                    byteArr:readByte() -- tuple flag 104
-                    byteArr:readByte() -- tuple arity
-                    byteArr:readByte() -- atom flag 
-                    local protoName = byteArr:readStringUShort()
-                    byteArr:setPos(1)
-                    --CCNotificationCenter:sharedNotificationCenter()->postNotification(protoName);
-                    self.buf = ""
-                    self:dispatchEvent({name=SocketTCP.EVENT_DATA, protoName = protoName, data=socketDecode(byteArr)})
-                end
             end
         end
     end

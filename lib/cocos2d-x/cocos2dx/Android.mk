@@ -82,6 +82,7 @@ particle_nodes/CCParticleSystem.cpp \
 particle_nodes/CCParticleBatchNode.cpp \
 particle_nodes/CCParticleSystemQuad.cpp \
     platform/CCCommon.cpp \
+    platform/HelperFunc.cpp \
 platform/CCImageCommonWebp.cpp \
 platform/CCSAXParser.cpp \
 platform/CCThread.cpp \
@@ -166,6 +167,10 @@ LOCAL_EXPORT_C_INCLUDES := $(LOCAL_PATH) \
                     $(LOCAL_PATH)/support
 
 LOCAL_C_INCLUDES := $(LOCAL_PATH) \
+                    $(LOCAL_PATH)/../scripting/lua/cocos2dx_support \
+                    $(LOCAL_PATH)/../scripting/lua/luajit/include \
+                    $(LOCAL_PATH)/support \
+                    $(LOCAL_PATH)/platform \
                     $(LOCAL_PATH)/include \
                     $(LOCAL_PATH)/kazmath/include \
                     $(LOCAL_PATH)/platform/android

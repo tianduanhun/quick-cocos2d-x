@@ -30,6 +30,7 @@
 #include "platform/CCFileUtils.h"
 #include "unzip.h"
 #include <map>
+#include "HelperFunc.h"
 
 NS_CC_BEGIN
 
@@ -308,7 +309,19 @@ int ZipUtils::ccInflateCCZFile(const char *path, unsigned char **out)
     unsigned char* compressed = NULL;
     
     unsigned long fileLen = 0;
-    compressed = CCFileUtils::sharedFileUtils()->getFileData(path, "rb", &fileLen);
+	
+	std::string lowerCase(path);
+    for (unsigned int i = 0; i < lowerCase.length(); ++i)
+    {
+        lowerCase[i] = tolower(lowerCase[i]);
+    }
+        
+    if (lowerCase.find(".ccz") != std::string::npos)
+    {
+		compressed = CZHelperFunc::getFileData(path, "rb", &fileLen);
+	} else {
+		compressed = CCFileUtils::sharedFileUtils()->getFileData(path, "rb", &fileLen);
+	}
     
     if(NULL == compressed || 0 == fileLen)
     {

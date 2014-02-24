@@ -146,7 +146,7 @@ public:
 protected:
     CCLuaStack(void)
     : m_state(NULL)
-    , m_xxteaEnabled(false)
+    , m_xxteaEnabled(true)
     , m_xxteaKey(NULL)
     , m_xxteaKeyLen(0)
     , m_xxteaSign(NULL)
@@ -165,13 +165,14 @@ protected:
     static struct cc_timeval m_lasttime;
     static CCLuaStackMap s_map;
 
-    bool  m_xxteaEnabled;
+    
+public:
+	bool  m_xxteaEnabled;
     char *m_xxteaKey;
     int   m_xxteaKeyLen;
     char *m_xxteaSign;
     int   m_xxteaSignLen;
 
-public:
     static int lua_print(lua_State *L);
     static int lua_execute(lua_State *L, int numArgs, bool removeResult);
     static int lua_loadChunksFromZIP(lua_State *L);

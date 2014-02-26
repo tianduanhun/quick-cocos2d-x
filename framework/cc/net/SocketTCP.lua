@@ -158,7 +158,6 @@ function SocketTCP:_onDisconnect()
     self.msgLen = 0
     self.isConnected = false
     self:dispatchEvent({name=SocketTCP.EVENT_CLOSED})
-    echoInfo("_reconect111111111111")
     self:_reconnect();
 end
 
@@ -168,6 +167,8 @@ function SocketTCP:_onConnected()
     self.isConnected = true
     self:dispatchEvent({name=SocketTCP.EVENT_CONNECTED})
     if self.connectTimeTickScheduler then scheduler.unscheduleGlobal(self.connectTimeTickScheduler) end
+    self.buf = ""
+    self.msgLen = 0
 
     local receive_msg_part
     receive_msg_part = function()
@@ -275,7 +276,6 @@ end
 function SocketTCP:_connectFailure(status)
     --echoInfo("%s._connectFailure", self.name);
     self:dispatchEvent({name=SocketTCP.EVENT_CONNECT_FAILURE})
-    echoInfo("_reconect111111111111")
     self:_reconnect();
 end
 

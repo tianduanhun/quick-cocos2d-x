@@ -114,7 +114,20 @@ function SocketTCP:send(__data)
     local _head = cc.utils.ByteArray.new(cc.utils.ByteArray.ENDIAN_BIG)
     _head:writeInt(_len)
     self.tcp:send(_head:getPack())
-    self.tcp:send(__data:getPack())
+    local __dataPack = __data:getPack()
+    if _len < 1024 then
+        self.tcp:send(__dataPack)
+    else
+        local i = 0
+        local res, reason = nil
+        while (i + 1024 < _len) do
+            local res, reason, k, j = self.tcp:send(__dataPack, i + 1, i + 1024)
+            print("socket, send, _len:", _len, "i:", i, "res:", res, "reason:", reason, "k:", k, "j:", j, "dataPack:", __dataPack) 
+            i = i + 1024
+        end
+        local res, reason, k, j = self.tcp:send(__dataPack, i + 1, _len)
+        print("socket, send, _len:", _len, "res:", res, "reason:", reason, "k:", k, "j:", j, "dataPack:", __dataPack) 
+    end
 end
 
 function SocketTCP:close( ... )

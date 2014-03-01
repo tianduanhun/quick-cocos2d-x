@@ -87,17 +87,42 @@ end
 -- E.g. the #self:_buf is 18, but #ByteArray.getBytes is 63.
 -- I think the cause is the table.concat treat every item in ByteArray._buf as a general string, not a char.
 -- So, I use lpack repackage the ByteArray._buf, theretofore, I must convert them to a byte number.
+--function ByteArray:getPack(__offset, __length)
+	--__offset = __offset or 1
+	--__length = __length or #self._buf
+	--local __t = {}
+	--for i=__offset,__length do
+		--__t[#__t+1] = string.byte(self._buf[i])
+	--end
+	--local __fmt = self:_getLC("b"..#__t)
+	----print("fmt:", __fmt)
+	--local __s = string.pack(__fmt, unpack(__t))
+	--return __s
+--end
+
 function ByteArray:getPack(__offset, __length)
-	__offset = __offset or 1
-	__length = __length or #self._buf
-	local __t = {}
-	for i=__offset,__length do
-		__t[#__t+1] = string.byte(self._buf[i])
-	end
-	local __fmt = self:_getLC("b"..#__t)
-	--print("fmt:", __fmt)
-	local __s = string.pack(__fmt, unpack(__t))
-	return __s
+        __offset = __offset or 1
+        __length = __length or #self._buf
+        local __t = {}
+        local __fmt
+        local __s = ""
+        --print("------------------::::", __length)
+        for i=__offset,__length do
+            __t[#__t+1] = string.byte(self._buf[i])
+            if #__t >= 500 then
+                __fmt = self:_getLC("b"..#__t)
+                __s = __s .. string.pack(__fmt, unpack(__t))
+                --print(" ----------- fmt:", __fmt, "s:", __s)
+                __t = {}
+            end
+        end
+        if #__t > 0 then
+            __fmt = self:_getLC("b"..#__t)
+            __s = __s .. string.pack(__fmt, unpack(__t))
+            --print(" ----------- fmt:", __fmt, "s:", __s)
+        end
+        --print("fmt:", __fmt)
+        return __s
 end
 
 --- rawUnPack perform like lpack.pack, but return the ByteArray.

@@ -2,6 +2,7 @@
 
 require_once(__DIR__ . '/init.php');
 require_once(__DIR__ . '/xxtea.php');
+define('SPLIT_CHAR', '#');
 
 class FilesPacker
 {
@@ -209,7 +210,7 @@ class FilesPacker
             {
                 #$moduleName = substr(substr($path, $this->config['srcpathLength']), 0, -4);
                 $moduleName = substr($path, $this->config['srcpathLength']);
-                $moduleName = str_replace('.', SPLIT_CHAR, $moduleName);
+		$moduleName = str_replace('.', SPLIT_CHAR, $moduleName);
                 $tempFilePath = $this->config['srcpath'] . DS . $moduleName . '.tmp';
                 $moduleName = str_replace(DS, '.', $moduleName);
                 $skip = false;

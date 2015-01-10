@@ -178,6 +178,11 @@ class CCFileUtils
     void addSearchResolutionsOrder(const char* order);
 
     /**
+     * remove paths.
+     */
+    void removeAllPaths();
+
+    /**
      * Set search root path.
      */
     void setSearchRootPath(const char* path);

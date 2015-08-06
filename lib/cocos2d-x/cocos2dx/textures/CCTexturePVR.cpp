@@ -652,7 +652,10 @@ bool CCTexturePVR::initWithContentsOfFile(const char* path)
 
     m_bRetainName = false; // cocos2d integration
 
-    if (! ((unpackPVRv2Data(pvrdata, pvrlen)  || unpackPVRv3Data(pvrdata, pvrlen)) && createGLTexture()) )
+    bool f1 = unpackPVRv2Data(pvrdata, pvrlen); 
+    bool f2 = unpackPVRv3Data(pvrdata, pvrlen);  
+    bool f3 = createGLTexture();
+    if (! (f1  || f2) && f3 )
     {
         CC_SAFE_DELETE_ARRAY(pvrdata);
         this->release();

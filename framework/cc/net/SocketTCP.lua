@@ -249,20 +249,11 @@ function SocketTCP:_onConnected()
     receive_body = function()
         local ret = receive_msg_part()
         if ret == 1 then
-            local byteArr = cc.utils.ByteArray.new(cc.utils.ByteArray.ENDIAN_BIG)
-            byteArr:writeStringBytes(self.buf)
-            byteArr:setPos(1)
-            byteArr:readByte() -- 131 erlang header
-            byteArr:readByte() -- tuple flag 104
-            byteArr:readByte() -- tuple arity
-            byteArr:readByte() -- atom flag 
-            local protoName = byteArr:readStringUShort()
-            byteArr:setPos(1)
-            --CCNotificationCenter:sharedNotificationCenter()->postNotification(protoName);
+            local buf = self.buf
+            self:dispatchEvent({name=SocketTCP.EVENT_DATA, buf=buf})
             self.buf = ""
             self.msgLen = self.packet
             receive_msg = receive_head
-            self:dispatchEvent({name=SocketTCP.EVENT_DATA, protoName = protoName, data=socketDecode(byteArr)})
             return 0
         else 
             return ret

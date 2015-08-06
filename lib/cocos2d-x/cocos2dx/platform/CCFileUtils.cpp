@@ -693,6 +693,13 @@ const std::vector<std::string>& CCFileUtils::getSearchPaths()
     return m_searchPathArray;
 }
 
+void CCFileUtils::removeAllPaths()
+{
+    m_fullPathCache.clear();
+    m_searchPathArray.clear();
+    updateSearchPathArrayCheck();
+}
+
 void CCFileUtils::setSearchPaths(const std::vector<std::string>& searchPaths)
 {
     m_fullPathCache.clear();

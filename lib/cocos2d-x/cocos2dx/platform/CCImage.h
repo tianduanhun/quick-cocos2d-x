@@ -26,7 +26,8 @@ THE SOFTWARE.
 #define __CC_IMAGE_H__
 
 #include "cocoa/CCObject.h"
-
+#include "ccTypes.h"
+#include "platform/CCCommon.h"
 NS_CC_BEGIN
 
 #if (CC_TARGET_PLATFORM == CC_PLATFORM_WINRT) || (CC_TARGET_PLATFORM == CC_PLATFORM_WP8)
@@ -163,6 +164,34 @@ public:
 
     bool hasAlpha()                     { return m_bHasAlpha;   }
     bool isPremultipliedAlpha()         { return m_bPreMulti;   }
+    //ccColor4B getColor4B(float x, float y);
+	//ccColor4F getColor4F(float x, float y);
+
+
+	ccColor4B getColor4B(float x, float y)
+	{
+        ccColor4B color = {};
+        if(x<0.f || y<0.f || x>getWidth() || y>getHeight())
+        {
+            CCLOG("cocos2d: CCImage::getColor4B(%2.f,%2.f) x or y is not in range of the image. W:%d, H:%d",
+                  x, y, getWidth(), getHeight());
+            return color;
+        }
+		int ix = (int)x - 1;
+		int iy = (int)y - 1;
+        unsigned char* pos = m_pData;
+        pos += (iy*getWidth() + ix) * 4;
+        color.r = *(pos++);
+        color.g = *(pos++);
+        color.b = *(pos++);
+        color.a = *(pos++);
+		return color;
+	};
+
+	ccColor4F getColor4F(float x, float y)
+	{
+		return ccc4FFromccc4B(getColor4B(x, y));
+	};
 
 
     /**

@@ -106,8 +106,7 @@ public abstract class Cocos2dxActivity extends Activity implements
 		super.onResume();
 		Log.d(TAG, "ACTIVITY ON RESUME");
 		mIsOnPause = false;
-		this.mGLSurfaceView.onResume();
-		this.mGLSurfaceView.requestFocus();
+		resumeGame();
 	}
 
 	@Override

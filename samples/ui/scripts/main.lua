@@ -6,4 +6,4 @@ function __G__TRACKBACK__(errorMessage)
     print("----------------------------------------")
 end
 
-require("app.UIDemoApp").new():run()
+require("app.UIDemoApp").new():run()--
